@@ -69,10 +69,15 @@ static guint g_modifier_state, g_pre_modifier_state;
 #endif
 
 void
-im_uim_convert_keyevent(GdkEventKey *event, int *ukey, int *umod)
+im_uim_convert_keyevent
+(GdkEventKey *event, int *ukey, int *umod, int *xkeycode)
 {
   int keyval = event->keyval;
   int mod = event->state;
+
+#ifdef GDK_WINDOWING_X11
+  *xkeycode = event->hardware_keycode;
+#endif
 
   *umod = 0;
 #ifdef GDK_WINDOWING_X11

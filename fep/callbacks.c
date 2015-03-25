@@ -179,8 +179,8 @@ int press_key(int key, int key_state)
     debug2(("press key = %d key_state = %d\n", key, key_state));
   }
 #endif
-  raw = uim_press_key(g_context, key, key_state);
-  uim_release_key(g_context, key, key_state);
+  raw = uim_press_key(g_context, key, key_state, 0);
+  uim_release_key(g_context, key, key_state, 0);
   return raw;
 }
 

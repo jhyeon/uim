@@ -771,19 +771,20 @@ void InputContext::update_preedit()
 int InputContext::pushKey(keyState *k)
 {
     int key = k->key();
+    int xkeycode = k->xkeycode();
     int rv = 1;
 
     if (key != UKey_Other) {
 	if (k->is_push()) {
-	    rv = uim_press_key(mUc, key, k->modifier());
+	    rv = uim_press_key(mUc, key, k->modifier(), xkeycode);
 	    if (!(g_option_mask & OPT_ON_DEMAND_SYNC)) {
 		// Call uim_release_key here since we don't filter key
 		// release event with full-synchronous-method for now.
-		uim_release_key(mUc, key, k->modifier());
+		uim_release_key(mUc, key, k->modifier(), xkeycode);
 	    }
 	}
 	else
-	    rv = uim_release_key(mUc, key, k->modifier());
+	    rv = uim_release_key(mUc, key, k->modifier(), xkeycode);
     }
 
     if (rv) {
@@ -1317,6 +1318,7 @@ void keyState::check_key(keyEventX *x)
 	mModifier |= (gMod5Mask & mPreModState);
 
     mKey = uim_x_keysym2ukey(x->key_sym);
+    mXKeyCode = (KeyCode)x->ev.xkey.keycode;
 
 #if UIM_XIM_USE_JAPANESE_KANA_KEYBOARD_HACK
     mKey = uim_x_kana_input_hack_translate_key(mKey,
@@ -1347,6 +1349,11 @@ bool keyState::is_push()
 KeySym keyState::xkeysym()
 {
     return mXKeySym;
+}
+
+KeyCode keyState::xkeycode()
+{
+    return mXKeyCode;
 }
 
 int keyState::xkeystate()

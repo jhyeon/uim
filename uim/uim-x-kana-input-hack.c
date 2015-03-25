@@ -97,9 +97,9 @@ uim_x_kana_input_hack_filter_event(uim_context uc, XEvent *event)
       int not_filtered;
 
       if (event->type == KeyPress)
-	not_filtered = uim_press_key(uc, translated_key, 0);
+	not_filtered = uim_press_key(uc, translated_key, 0, 0);
       else
-	not_filtered = uim_release_key(uc, translated_key, 0);
+	not_filtered = uim_release_key(uc, translated_key, 0, 0);
 
       if (!not_filtered)
 	return UIM_TRUE;

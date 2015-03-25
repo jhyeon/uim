@@ -37,6 +37,7 @@
 #include <cstring>
 
 #include <QtCore/QPoint>
+#include <QtCore/QtGlobal>
 #include <QtGui/QApplication>
 #include <QtGui/QInputMethodEvent>
 #include <QtGui/QLabel>
@@ -220,6 +221,10 @@ bool QUimInputContext::filterEvent( const QEvent *event )
 
     const QKeyEvent *keyevent = static_cast<const QKeyEvent *>( event );
     int qkey = keyevent->key();
+    int keycode = 0;
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 2, 0))
+    keycode = keyevent->nativeScanCode();
+#endif
 
     int modifier = 0;
     if ( keyevent->modifiers() & Qt::ShiftModifier )
@@ -339,7 +344,7 @@ bool QUimInputContext::filterEvent( const QEvent *event )
     int notFiltered;
     if ( type == QEvent::KeyPress )
     {
-        notFiltered = uim_press_key( m_uc, key, modifier );
+        notFiltered = uim_press_key( m_uc, key, modifier, keycode );
 #ifdef Q_WS_X11
         if ( notFiltered )
             return mCompose->handle_qkey( keyevent );
@@ -350,7 +355,7 @@ bool QUimInputContext::filterEvent( const QEvent *event )
     }
     else if ( type == QEvent::KeyRelease )
     {
-        notFiltered = uim_release_key( m_uc, key, modifier );
+        notFiltered = uim_release_key( m_uc, key, modifier, keycode );
 #ifdef Q_WS_X11
         if ( notFiltered )
             return mCompose->handle_qkey( keyevent );

@@ -282,7 +282,8 @@ static uim_lisp protected;
 static void define_valid_key_symbols(void);
 static const char *get_sym(int key);
 static uim_bool filter_key(uim_context uc,
-                           int key, int state, uim_bool is_press);
+                           int key, int state, int keycode, uim_bool is_press);
+static int valid_keycode(int keycode);
 static int emergency_key_p(int key, int state);
 
 #if 0
@@ -334,7 +335,7 @@ get_sym(int key)
 
 /* FIXME: Replace 'protected' variable with stack protection */
 static uim_bool
-filter_key(uim_context uc, int key, int state, uim_bool is_press)
+filter_key(uim_context uc, int key, int state, int keycode, uim_bool is_press)
 {
   uim_lisp key_, filtered;
   const char *sym, *handler;
@@ -361,9 +362,18 @@ filter_key(uim_context uc, int key, int state, uim_bool is_press)
     protected = key_ = MAKE_SYM(get_sym(key));
   }
 
+  uim_scm_callf("context-set-keycode!", "oo", uc->sc,
+		valid_keycode(keycode) ? MAKE_INT(keycode) : uim_scm_f());
+
   handler = (is_press) ? "key-press-handler" : "key-release-handler";
   filtered = uim_scm_callf(handler, "poi", uc, key_, state);
   return C_BOOL(filtered);
+}
+
+static int
+valid_keycode(int keycode)
+{
+  return keycode >= 8 && keycode <= 255;
 }
 
 static int
@@ -377,7 +387,7 @@ emergency_key_p(int key, int state)
 }
 
 int
-uim_press_key(uim_context uc, int key, int state)
+uim_press_key(uim_context uc, int key, int state, int keycode)
 {
   uim_bool filtered;
 
@@ -389,7 +399,7 @@ uim_press_key(uim_context uc, int key, int state)
   assert(key >= 0);
   assert(state >= 0);
 
-  filtered = filter_key(uc, key, state, UIM_TRUE);
+  filtered = filter_key(uc, key, state, keycode, UIM_TRUE);
 
   UIM_CATCH_ERROR_END();
 
@@ -397,7 +407,7 @@ uim_press_key(uim_context uc, int key, int state)
 }
 
 int
-uim_release_key(uim_context uc, int key, int state)
+uim_release_key(uim_context uc, int key, int state, int keycode)
 {
   uim_bool filtered;
 
@@ -409,7 +419,7 @@ uim_release_key(uim_context uc, int key, int state)
   assert(key >= 0);
   assert(state >= 0);
 
-  filtered = filter_key(uc, key, state, UIM_FALSE);
+  filtered = filter_key(uc, key, state, keycode, UIM_FALSE);
 
   UIM_CATCH_ERROR_END();
 

@@ -1322,14 +1322,14 @@ im_uim_filter_keypress(GtkIMContext *ic, GdkEventKey *key)
 #else
   if (TRUE) {
 #endif
-    int kv, mod;
+    int kv, mod, xkeycode;
 
-    im_uim_convert_keyevent(key, &kv, &mod);
+    im_uim_convert_keyevent(key, &kv, &mod, &xkeycode);
 
     if (key->type == GDK_KEY_RELEASE)
-      rv = uim_release_key(uic->uc, kv, mod);
+      rv = uim_release_key(uic->uc, kv, mod, xkeycode);
     else
-      rv = uim_press_key(uic->uc, kv, mod);
+      rv = uim_press_key(uic->uc, kv, mod, xkeycode);
 
     if (rv) {
 #ifdef GDK_WINDOWING_X11
@@ -1756,15 +1756,15 @@ handle_key_on_toplevel(GtkWidget *widget, GdkEventKey *event, gpointer data)
   /* GtkWindow *window = GTK_WINDOW(widget); */
 
   if (focused_context == uic) {
-    int rv, kv, mod;
+    int rv, kv, mod, xkeycode;
 
     store_event_key(&uic->event_rec, event);
-    im_uim_convert_keyevent(event, &kv, &mod);
+    im_uim_convert_keyevent(event, &kv, &mod, &xkeycode);
 
     if (event->type == GDK_KEY_RELEASE)
-      rv = uim_release_key(focused_context->uc, kv, mod);
+      rv = uim_release_key(focused_context->uc, kv, mod, xkeycode);
     else
-      rv = uim_press_key(focused_context->uc, kv, mod);
+      rv = uim_press_key(focused_context->uc, kv, mod, xkeycode);
 
     if (rv)
       return FALSE;

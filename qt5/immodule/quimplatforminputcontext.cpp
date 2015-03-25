@@ -216,6 +216,7 @@ bool QUimPlatformInputContext::filterEvent(const QEvent *event)
 
     const QKeyEvent *keyevent = static_cast<const QKeyEvent *>(event);
     int qkey = keyevent->key();
+    int keycode = keyevent->nativeScanCode();
 
     int modifier = 0;
     if (keyevent->modifiers() & Qt::ShiftModifier)
@@ -358,7 +359,7 @@ bool QUimPlatformInputContext::filterEvent(const QEvent *event)
 
     int notFiltered;
     if (type == QEvent::KeyPress) {
-        notFiltered = uim_press_key(m_uc, key, modifier);
+        notFiltered = uim_press_key(m_uc, key, modifier, keycode);
 #ifdef Q_WS_X11
         if (notFiltered)
             return mCompose->handle_qkey(keyevent);
@@ -367,7 +368,7 @@ bool QUimPlatformInputContext::filterEvent(const QEvent *event)
             return false;
 #endif
     } else if (type == QEvent::KeyRelease) {
-        notFiltered = uim_release_key(m_uc, key, modifier);
+        notFiltered = uim_release_key(m_uc, key, modifier, keycode);
 #ifdef Q_WS_X11
         if (notFiltered)
             return mCompose->handle_qkey(keyevent);

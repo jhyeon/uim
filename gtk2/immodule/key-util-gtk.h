@@ -47,6 +47,7 @@ void im_uim_init_modifier_keys(void);
  * Get ukey and umod from gdk's GdkEventKey->keyval and GdkEventKey->state.
  * This function should be called at both key press and release events.
  */
-void im_uim_convert_keyevent(GdkEventKey *key, int *ukey, int *umod);
+void im_uim_convert_keyevent
+(GdkEventKey *key, int *ukey, int *umod, int *xkeycode);
 
 #endif

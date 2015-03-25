@@ -561,10 +561,10 @@ process_keyvector(int serial, int cid, uim_key ukey, const char *keyname)
   if (ukey.key >= 0) {
 	/* key input is received by requested context */
 	debug_printf(DEBUG_NOTE, "uim_press_key\n");
-	ret = uim_press_key(current->context, ukey.key, ukey.mod);
+	ret = uim_press_key(current->context, ukey.key, ukey.mod, 0);
 
 	debug_printf(DEBUG_NOTE, "uim_release_key\n");
-	ret2 = uim_release_key(current->context, ukey.key, ukey.mod);
+	ret2 = uim_release_key(current->context, ukey.key, ukey.mod, 0);
 
 	debug_printf(DEBUG_NOTE, "ret = %d, ret2 = %d\n", ret, ret2);
 

@@ -312,7 +312,8 @@
     (im           #f)
     (widgets      ())  ;; may be renamed
     (toggle-state #f)
-    (key-passthrough #f)))
+    (key-passthrough #f)
+    (keycode      #f)))
 (define-record 'context context-rec-spec)
 ;; backward compatibility: should be replaced with context-uc and
 ;; context-set-uc!

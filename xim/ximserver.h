@@ -143,6 +143,7 @@ public:
     int key();
     int modifier();
     KeySym xkeysym();
+    KeyCode xkeycode();
     int xkeystate();
     void reset();
 
@@ -152,6 +153,7 @@ private:
     int mKey;
     int mModifier;
     KeySym mXKeySym;
+    KeyCode mXKeyCode;
     int mXKeyState;
     bool m_bPush;
     int mModState;

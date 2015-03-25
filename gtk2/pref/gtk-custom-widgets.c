@@ -1538,8 +1538,9 @@ static gboolean
 grab_win_key_press_cb (GtkWidget *widget, GdkEventKey *event,
 		       GtkEntry *key_entry)
 {
+  int xkeycode;
   im_uim_convert_keyevent(event, &key_pref_win.grabbed_key_val,
-				 &key_pref_win.grabbed_key_state);
+				 &key_pref_win.grabbed_key_state, &xkeycode);
 
   return TRUE;
 }
@@ -1548,11 +1549,12 @@ static gboolean
 grab_win_key_release_cb (GtkWidget *widget, GdkEventKey *event,
 			 GtkEntry *key_entry)
 {
+  int xkeycode;
   key_pref_set_value(key_pref_win.grabbed_key_val,
 		     key_pref_win.grabbed_key_state);
 
   im_uim_convert_keyevent(event, &key_pref_win.grabbed_key_val,
-				 &key_pref_win.grabbed_key_state);
+				 &key_pref_win.grabbed_key_state, &xkeycode);
 
   g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
 				       (gpointer)(uintptr_t) grab_win_key_press_cb,
@@ -1570,9 +1572,9 @@ static gboolean
 key_choose_entry_key_press_cb (GtkWidget *widget, GdkEventKey *event,
 			       GtkEntry *key_entry)
 {
-  int ukey, umod;
+  int ukey, umod, xkeycode;
 
-  im_uim_convert_keyevent(event, &ukey, &umod);
+  im_uim_convert_keyevent(event, &ukey, &umod, &xkeycode);
   key_pref_set_value(ukey, umod);
 
   return TRUE;
@@ -1582,9 +1584,9 @@ static gboolean
 key_choose_entry_key_release_cb (GtkWidget *widget, GdkEventKey *event,
 			       GtkEntry *key_entry)
 {
-  int ukey, umod;
+  int ukey, umod, xkeycode;
 
-  im_uim_convert_keyevent(event, &ukey, &umod);
+  im_uim_convert_keyevent(event, &ukey, &umod, &xkeycode);
 
   return TRUE;
 }

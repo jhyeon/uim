@@ -310,7 +310,7 @@ bool QUimInputContext::filterEvent( const QEvent *event )
     int notFiltered;
     if ( type == QEvent::KeyPress )
     {
-        notFiltered = uim_press_key( m_uc, key, modifier );
+        notFiltered = uim_press_key( m_uc, key, modifier, 0 );
 #ifdef Q_WS_X11
         if ( notFiltered )
             return mCompose->handle_qkey( keyevent );
@@ -321,7 +321,7 @@ bool QUimInputContext::filterEvent( const QEvent *event )
     }
     else if ( type == QEvent::KeyRelease )
     {
-        notFiltered = uim_release_key( m_uc, key, modifier );
+        notFiltered = uim_release_key( m_uc, key, modifier, 0 );
 #ifdef Q_WS_X11
         if ( notFiltered )
             return mCompose->handle_qkey( keyevent );

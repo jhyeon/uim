@@ -105,9 +105,9 @@ main(int argc, char **argv)
       continue;
     }
     if (isalpha((unsigned char)buf[0])) {
-      uim_press_key(ac->uc, buf[0], 0);
+      uim_press_key(ac->uc, buf[0], 0, 0);
     } else {
-      uim_press_key(ac->uc, UKey_Return, 0);
+      uim_press_key(ac->uc, UKey_Return, 0, 0);
     }
   }
   return 0;
