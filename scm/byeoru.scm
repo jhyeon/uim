@@ -187,7 +187,7 @@
 
 (define byeoru-xkb-group #f)
 
-(define (byeoru-lookup-xkb-map key)
+(define (byeoru-lookup-xkb-map-by-ukey key)
   (let ((alists
 	 (or byeoru-xkb-map-alists
 	     (begin
@@ -220,7 +220,7 @@
 ;; for backwards compatibility with old layout definitions that may be
 ;; kept in ~/.uim
 (define (byeoru-string->keypair str)
-  (let ((entry (byeoru-lookup-xkb-map (string->charcode str))))
+  (let ((entry (byeoru-lookup-xkb-map-by-ukey (string->charcode str))))
     (if entry
 	(let ((shift-level (second entry))
 	      (xkbname (fourth entry)))
@@ -1504,15 +1504,31 @@
     (lambda (key key-state)
       (shift-or-no-modifier? -1 key-state))))
 
-(define (byeoru-key->xkbname key)
-  (let ((entry (byeoru-lookup-xkb-map key)))
-    (and entry (fourth entry))))
+(define (byeoru-key->xkbname key keycode)
+  (if keycode
+      (let ((entry (assv keycode (xkb-get-map))))
+	(and entry (second entry)))
+      (let ((entry (byeoru-lookup-xkb-map-by-ukey key)))
+	(and entry (fourth entry)))))
 
-(define (byeoru-key-to-choices key key-state)
+(define (byeoru-key-to-choices key key-state keycode)
   (and (byeoru-non-control-key? key key-state)
        (let* ((layout (symbol-value byeoru-layout))
 	      (shift-level (if (shift-key-mask key-state) 1 0))
 	      (xkbname (byeoru-key->xkbname key))
+	      (keypair (cons shift-level xkbname))
+	      (entry (assoc keypair layout)))
+	 (and entry
+	      (let ((choices (cdr entry)))
+		(if (number? choices)
+		    (ucs->utf8-string choices)
+		    choices))))))
+
+(define (byeoru-key-to-choices key key-state keycode)
+  (and (byeoru-non-control-key? key key-state)
+       (let* ((layout (symbol-value byeoru-layout))
+	      (shift-level (if (shift-key-mask key-state) 1 0))
+	      (xkbname (byeoru-key->xkbname key keycode))
 	      (keypair (cons shift-level xkbname))
 	      (entry (assoc keypair layout)))
 	 (and entry
@@ -1748,8 +1764,8 @@
 		       #t (cdr key-hist))
 	   #t))))
 
-(define (byeoru-feed-hangul-key bc key key-state)
-  (let ((choices (byeoru-key-to-choices key key-state)))
+(define (byeoru-feed-hangul-key bc key key-state keycode)
+  (let ((choices (byeoru-key-to-choices key key-state keycode)))
     (and (list? choices)
 	 (begin
 	   (if (eq? (byeoru-automaton-eat-key (byeoru-context-automaton bc)
@@ -1758,7 +1774,7 @@
 	       (byeoru-break-char bc))
 	   #t))))
 
-(define (byeoru-proc-input-state-with-preedit bc key key-state)
+(define (byeoru-proc-input-state-with-preedit bc key key-state keycode)
   (let* ((word (byeoru-context-word-ustr bc))
 	 (by-word? (byeoru-context-commit-by-word? bc)))
 
@@ -1824,13 +1840,13 @@
      ;; Hangul jamo.
      ((if (eq? byeoru-layout 'byeoru-layout-romaja)
 	  (byeoru-feed-romaja-key bc key key-state)
-	  (byeoru-feed-hangul-key bc key key-state)))
+	  (byeoru-feed-hangul-key bc key key-state keycode)))
 
      ;; Commit the word.
      (else
       (byeoru-flush-automaton bc)
       (let ((choices (or (eq? byeoru-layout 'byeoru-layout-romaja)
-			 (byeoru-key-to-choices key key-state))))
+			 (byeoru-key-to-choices key key-state keycode))))
 	(if (string? choices)
 	    (begin
 	      (ustr-insert-elem! word choices)
@@ -1849,7 +1865,7 @@
     (im-activate-candidate-selector bc max max)
     (im-select-candidate bc (byeoru-context-menu-no bc))))
 
-(define (byeoru-proc-input-state-no-preedit bc key key-state)
+(define (byeoru-proc-input-state-no-preedit bc key key-state keycode)
   (cond
 
    ;; Hangul mode off.
@@ -1862,12 +1878,12 @@
    ;; Hangul jamo.
    ((if (eq? byeoru-layout 'byeoru-layout-romaja)
 	(byeoru-feed-romaja-key bc key key-state)
-	(byeoru-feed-hangul-key bc key key-state)))
+	(byeoru-feed-hangul-key bc key key-state keycode)))
 
    ;; Commit a single key.
    (else
     (let ((choices (or (eq? byeoru-layout 'byeoru-layout-romaja)
-		       (byeoru-key-to-choices key key-state))))
+		       (byeoru-key-to-choices key key-state keycode))))
       (if (string? choices)
 	  (byeoru-commit bc choices)
 	  (im-commit-raw bc))
@@ -1879,10 +1895,10 @@
     (not (and (ustr-empty? (byeoru-context-word-ustr bc))
 	      (equal? (byeoru-automaton-composing-char ba) '(0 0 0))))))
 
-(define (byeoru-proc-input-state bc key key-state)
+(define (byeoru-proc-input-state bc key key-state keycode)
   (if (byeoru-has-preedit? bc)
-      (byeoru-proc-input-state-with-preedit bc key key-state)
-      (byeoru-proc-input-state-no-preedit bc key key-state)))
+      (byeoru-proc-input-state-with-preedit bc key key-state keycode)
+      (byeoru-proc-input-state-no-preedit bc key key-state keycode)))
 
 (define (byeoru-move-candidate bc offset)
   (let* ((cands (byeoru-context-cands bc))
@@ -2092,12 +2108,14 @@
 	  (context-update-preedit bc segments)))))
 
 (define (byeoru-key-press-handler bc key key-state)
-  (if (byeoru-context-on? bc)
-      (if (eq? (byeoru-context-mode bc) 'hangul)
-	  (byeoru-proc-input-state bc key key-state)
-	  (byeoru-proc-other-states bc key key-state))
-      (byeoru-proc-raw-state bc key key-state))
-  (byeoru-update-preedit bc))
+  (let ((keycode (byeoru-context-keycode bc)))
+    (print (list key key-state keycode))
+    (if (byeoru-context-on? bc)
+	(if (eq? (byeoru-context-mode bc) 'hangul)
+	    (byeoru-proc-input-state bc key key-state keycode)
+	    (byeoru-proc-other-states bc key key-state))
+	(byeoru-proc-raw-state bc key key-state))
+    (byeoru-update-preedit bc)))
 
 (define (byeoru-key-release-handler bc key key-state)
   (if (or (ichar-control? key)
