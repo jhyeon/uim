@@ -127,7 +127,8 @@
   (mapcar
    '(lambda (x)
       (let* ((name (car x))
-	     (lang (uim-get-emacs-lang name)))
+	     (lang (uim-get-emacs-lang name))
+	     (im))
 	(when (and name lang)
 	  (setq im (uim-leim-make-im-name name))
 	  (register-input-method im lang 'uim-leim-activate "uim"
