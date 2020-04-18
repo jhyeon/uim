@@ -138,17 +138,21 @@
 	 (define-key uim-mode-map [(control ?\[)] 'uim-process-input)
 	 )
 
-	((and uim-emacs (= emacs-major-version 20)) ;;; GNU Emacs-20.7
+	((and uim-emacs (>= emacs-major-version 24)) ;;; GNU Emacs-24 or later
 	 (define-key uim-mode-map [t] 'uim-process-input)
 	 (define-key uim-preedit-map [t] 'uim-process-input)
 
- 	 (define-key uim-escape-map [t] 'uim-process-input)
+	 (define-key uim-mode-map (kbd "ESC") 'uim-process-input)
 
- 	 (define-key uim-mode-map [27] 'uim-escape-map)
- 	 (define-key uim-preedit-map [27] 'uim-escape-map)
+         (define-key uim-mode-map (kbd "C-c") nil)
+	 )
 
-	 (if (not window-system)
-	     (define-key uim-mode-map [27] 'uim-process-input))
+        ;; GNU Emacs-22 and 23
+	((and uim-emacs (>= emacs-major-version 22))
+	 (define-key uim-mode-map [t] 'uim-process-input)
+	 (define-key uim-preedit-map [t] 'uim-process-input)
+
+	 (define-key uim-mode-map [27] 'uim-process-input)
 	 )
 
 	((and uim-emacs (= emacs-major-version 21)) ;;; GNU Emacs-21.x 
@@ -158,24 +162,20 @@
 	 (define-key uim-mode-map [27] 'uim-process-input)
 	 )
 
-        ;; GNU Emacs-22 and 23
-	((and uim-emacs
-              (= emacs-major-version 22)
-              (= emacs-major-version 23))
+	((and uim-emacs (= emacs-major-version 20)) ;;; GNU Emacs-20.7
 	 (define-key uim-mode-map [t] 'uim-process-input)
 	 (define-key uim-preedit-map [t] 'uim-process-input)
 
-	 (define-key uim-mode-map [27] 'uim-process-input)
-	 )
-
-	((and uim-emacs (>= emacs-major-version 24)) ;;; GNU Emacs-24 or later
-	 (define-key uim-mode-map [t] 'uim-process-input)
-	 (define-key uim-preedit-map [t] 'uim-process-input)
-
-	 (define-key uim-mode-map (kbd "ESC") 'uim-process-input)
+ 	 (define-key uim-escape-map [t] 'uim-process-input)
 
          (define-key uim-mode-map (kbd "C-c") nil)
          (define-key uim-mode-map (kbd "C-x") nil)
+
+ 	 (define-key uim-mode-map [27] 'uim-escape-map)
+ 	 (define-key uim-preedit-map [27] 'uim-escape-map)
+
+	 (if (not window-system)
+	     (define-key uim-mode-map [27] 'uim-process-input))
 	 )
 
 	)
